@@ -2,13 +2,16 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include<SoftwareSerial.h>
+#include <Wire.h> 
+#include "SSD1306Wire.h"
 
 /* Set these to your desired credentials. */
-const char *ssid = "ESPTSM";
+const char *ssid = "ESPTSMOLED";
 const char *password = "12345678";
 
 ESP8266WebServer server(80);
-SoftwareSerial sSerial(4, 5);
+SoftwareSerial sSerial(2, 0);
+SSD1306Wire display(0x3c, SDA, SCL);
 
 float temperture[10] = {-999,-999,-999,-999,-999,-999,-999,-999,-999,-999}; 
 unsigned int tp = 0;
@@ -18,6 +21,7 @@ unsigned char output[37];
 unsigned char to[2];
 unsigned char ta[2];
 char buff[1024];
+char dispbuf[128];
   
 void handleRoot() {
 
@@ -25,9 +29,9 @@ void handleRoot() {
   unsigned int pf=0;
    int ttp=tp;
 
-                Serial.println();
-       Serial.print("ttp:");
-       Serial.print(ttp);
+  Serial.println();
+  Serial.print("ttp:");
+  Serial.print(ttp);
   if(ttp!=0) {
     for( int i=ttp-1;i>=0;i--){   
      sprintf(temp, "<h1><font size=7>Temperture is: %.2f</font></h1><BR/>", temperture[i]);
@@ -45,9 +49,9 @@ void handleRoot() {
   }
 
   
-                Serial.println();
-       Serial.print("ttp:");
-       Serial.print(ttp);
+  Serial.println();
+  Serial.print("ttp:");
+  Serial.print(ttp);
        
   if(ttp!=9) {
     for( int i=9;i>=ttp;i--){   
@@ -95,6 +99,10 @@ void setup() {
   sSerial.write(0xA5);
   sSerial.write(0x45);
   sSerial.write(0xEA);
+
+  display.init();
+  //display.flipScreenVertically();
+  display.setFont(ArialMT_Plain_10);
 }
 void loop() {
   server.handleClient();
@@ -102,6 +110,9 @@ void loop() {
   if (sSerial.available() == false) {
     return;
   }
+
+  display.clear();
+
 
   Serial.println();
   Serial.print("Taking Readings:");
@@ -150,5 +161,11 @@ void loop() {
       ep=0;
     }
   }
-  delay(100);
+  
+  sprintf(dispbuf," %.2f °C",temperture[tp]);
+  display.setFont(ArialMT_Plain_24);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  display.drawString(0, 18, dispbuf);
+  display.display();
+  delay(10);
 }
