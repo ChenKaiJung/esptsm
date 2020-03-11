@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
-#include<SoftwareSerial.h>
+#include <SoftwareSerial.h>
 #include <Wire.h> 
 #include "SSD1306Wire.h"
 #include "images.h"
@@ -59,13 +59,13 @@ void handleRoot() {
      sprintf(temp, "<h1><font size=7>Temperture is: %.2f</font></h1><BR/>", temperture[i]);
      strncpy(&buff[pf],temp,strlen(temp)); 
      pf=pf+strlen(temp);  
-       Serial.println();
-       Serial.print("temperture:");
-       Serial.print(temperture[i]);
+       //Serial.println();
+       //Serial.print("temperture:");
+       //Serial.print(temperture[i]);
 
-              Serial.println();
-       Serial.print("i:");
-       Serial.print(i);
+       //       Serial.println();
+       //Serial.print("i:");
+       //Serial.print(i);
     }
   }
   server.send(200, "text/html", buff);
@@ -124,7 +124,7 @@ void loop() {
   }
 
   display.clear();
-  display.drawXbm(15, 0, da_width, da_height, da_bits); 
+  display.drawXbm(15, 0, car_width, car_height, car_bits); 
   Serial.println();
   Serial.print("Taking Readings:");
   for (int counter = 0; counter <= 36; counter++) {
