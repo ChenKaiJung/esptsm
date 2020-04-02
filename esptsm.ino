@@ -3,16 +3,21 @@
 #include <ESP8266WebServer.h>
 #include <SoftwareSerial.h>
 #include <Wire.h> 
-#include "SSD1306Wire.h"
+#include <Ultrasonic.h>
+#include <SSD1306Wire.h>
 #include "images.h"
+
+
 
 /* Set these to your desired credentials. */
 const char *ssid = "ESPTSMOLED";
 const char *password = "12345678";
 
+Ultrasonic ultrasonic(12, 14);
 ESP8266WebServer server(80);
 SoftwareSerial sSerial(2, 0);
 SSD1306Wire display(0x3c, SDA, SCL);
+
 
 float temperture[10] = {NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN}; 
 unsigned int tp = 0;
@@ -105,26 +110,48 @@ void setup() {
   //display.flipScreenVertically();
   display.setFont(ArialMT_Plain_10);
 
-  pinMode(16, INPUT); 
+  //pinMode(16, INPUT); 
+  pinMode(13,OUTPUT);
 }
 void loop() {
   server.handleClient();
-
-  int keyin=digitalRead(16);
+  
+  //int keyin=digitalRead(16);
   //Serial.println();
   //Serial.print(keyin);
-  if(keyin==1) {
-    sSerial.write(0xA5);
-    sSerial.write(0x15);  
-    sSerial.write(0xBA);  
+  //if(keyin==1) {
+  //  sSerial.write(0xA5);
+  //  sSerial.write(0x15);  
+  //  sSerial.write(0xBA);  
+  //}
+  int dist=ultrasonic.distanceRead();
+        Serial.println("");
+        Serial.print("Distance: ");
+      Serial.print(dist);  //讀取距離
+      Serial.println(" CM");
+
+  if(dist <10 ) {
+      tone(13,2525);
+      delay(100);
+      if(dist > 2 ) {
+          noTone(13);
+      }
+      else {
+        sSerial.write(0xA5);
+        sSerial.write(0x15);  
+        sSerial.write(0xBA); 
+      }
+   }
+   else {
+      noTone(13);
   }
-  
+        
   if (sSerial.available() == false) {
+    delay(100);
     return;
   }
+  noTone(13);
 
-  display.clear();
-  display.drawXbm(15, 0, car_width, car_height, car_bits); 
   Serial.println();
   Serial.print("Taking Readings:");
   for (int counter = 0; counter <= 36; counter++) {
@@ -152,7 +179,8 @@ void loop() {
     //Serial.println();
     //Serial.print("Temperature is: ");
     //Serial.print(temperture[tp]);
-    
+    display.clear();
+    display.drawXbm(15, 0, da_width, da_height, da_bits);    
     sprintf(dispbuf," %.2f °C",temperture[tp]);
     display.setFont(ArialMT_Plain_24);
     display.setTextAlignment(TEXT_ALIGN_LEFT);
